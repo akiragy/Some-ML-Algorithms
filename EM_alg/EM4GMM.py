@@ -1,4 +1,5 @@
 # -- coding: UTF-8 --
+"""用EM算法对混合高斯分布样本集进行聚类"""
 import sys
 sys.path.append("..")
 from Create_Distribution import create_GMM
@@ -10,24 +11,31 @@ from mpl_toolkits.mplot3d import Axes3D
 
 class EM_for_GMM(object):
 
-    def __init__(self, K = 3, d = 3, N = 1000, max_iter = 200):
+    def __init__(self, K = 3, d = 3, N = 3000, max_iter = 200):
+        """
+        :param K: 聚蔟数量
+        :param d: 样本维度
+        :param N: 样本数量
+        :param max_iter: 最大迭代次数
+        """
         np.random.seed(2018)
 
-        self.gmm = create_GMM.GMM(K, d, N, interval=1)
+        self.gmm = create_GMM.GMM(K, d, N, interval=1)  #生成混合高斯分布的数据集
         self.gmm.create_dataset()
 
-        self.K, self.d, self.N = K, d, N  #K成分数量，d变量维数，N样本个数
-        self.max_iter = max_iter  #EM算法最大迭代次数
+        self.K, self.d, self.N = K, d, N
+        self.max_iter = max_iter
         self.iter = self.max_iter  #实际迭代次数
 
         self.X =self.gmm.X  #样本集
-        self.k_true = self.gmm.k_true  #样本所属成分
+        self.k_true = self.gmm.k_true  #样本所属聚蔟
 
-        self.mean_true = self.gmm.mean_true  #每个成分的均值
-        self.cov_true = self.gmm.cov_true  #每个成分的协方差矩阵
+        self.mean_true = self.gmm.mean_true  #每个聚蔟的均值
+        self.cov_true = self.gmm.cov_true  #每个聚蔟的协方差矩阵
 
 
     def pdf_gauss(self, d, mean, cov, x):
+        """d维高斯分布的pdf"""
         c = (2*np.pi)**(-0.5*d) * np.linalg.det(cov)**(-0.5)
         quad = -0.5 * mat(x-mean) * mat(cov).I * mat(x-mean).T
         p = c * np.exp(quad)
@@ -57,18 +65,18 @@ class EM_for_GMM(object):
 
 
     def calc_ll(self):
-        '''计算似然函数'''
+        """计算似然函数"""
         ll = 0
         for n in range(self.N):
             sll = 0
             for k in range(self.K):
                 sll += self.mix_coef_em[k] * self.pdf_gauss(self.d,self.mean_em[k],self.cov_em[k],self.X[n,:])
             ll += np.log(sll)
-        return ll
+        return ll[0,0]
 
 
     def sep_class(self):
-        '''根据EM算法结果划分聚簇'''
+        """根据EM算法结果划分聚簇"""
         self.k_em = []
         for n_iter in range(self.N):
             gamma_n = self.gamma[n_iter,:]
@@ -99,7 +107,7 @@ class EM_for_GMM(object):
 
 
     def plt_2d(self, ax_0=0, ax_1=1):
-        '''作任意两个维度之间的散点图'''
+        """作任意两个维度之间的散点图"""
         plt.subplot(121)  #groundtruth
         for k_iter in range(self.K):
             k_n = [i for i in range(self.N) if self.k_true[i] == k_iter]
@@ -121,7 +129,7 @@ class EM_for_GMM(object):
             print("维度越界")
             return
 
-        ax = plt.subplot(121, projection='3d')  #groundtruth。需要导入Axes3D
+        ax = plt.subplot(121, projection='3d')  #groundtruth
         for k_iter in range(self.K):
             k_n = [i for i in range(self.N) if self.k_true[i] == k_iter]
             ax.scatter(self.X[k_n,d0], self.X[k_n,d1], self.X[k_n,d2])
@@ -150,5 +158,3 @@ if __name__ == "__main__":
     ee.EM_alg()
     ee.plt_2d(0,1)
     ee.plt_3d()
-    ee.plt_3d(d0=3)
-

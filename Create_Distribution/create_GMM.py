@@ -1,4 +1,5 @@
 # -- coding: UTF-8 --
+"""生成符合混合高斯分布的数据集"""
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -44,9 +45,7 @@ class GMM(object):
 
     def sample_from_gauss(self, k_sltd):
         """从单个高斯成分中采样"""
-        if k_sltd == -1:
-            print("emm")
-            exit()
+        assert k_sltd != -1
         mean_sltd, cov_sltd = self.mean_true[k_sltd], self.cov_true[k_sltd]  #选择均值和协方差矩阵
         x = np.random.multivariate_normal(mean_sltd, cov_sltd, 1)
         return x
@@ -72,8 +71,8 @@ class GMM(object):
 
     def plt_hist(self):
         """样本直方图"""
-        plt.hist(self.X, normed=True, bins=100)
-        plt.title("hist of GMM dataset")
+        plt.hist(self.X, normed=True, bins=100)  #将每个维度上的直方图显示在一起
+        plt.title("histogram of GMM dataset")
         plt.show()
 
 
@@ -94,7 +93,7 @@ class GMM(object):
         ax.set_ylabel('y-axis')
         ax.set_zlabel('z-axis')
         ax.legend(('group1', 'group2', 'group3'))
-        ax.set_title('scatter diag of GMM dataset', loc='center', fontsize='large')
+        ax.set_title('scatter diagram of GMM dataset', loc='center', fontsize='large')
         plt.show()
 
 
@@ -103,4 +102,3 @@ if __name__ == "__main__":
     gmm.create_dataset()
     gmm.plt_hist()
     gmm.plt_3d()
-    gmm.plt_3d(d0=4)
